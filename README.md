@@ -1,7 +1,4 @@
-# Cinebridge — ATV III (Adapter, Composite, Decorator) + ATV IV (containers)
-
-Repositório da ATV II evoluído para a ATV III e ATV IV. A raiz do projeto é o serviço **cinebridge-api**;
-os outros três microsserviços ficam em `services/`.
+# Cinebridge — ATV IV
 
 ```
 .
@@ -19,35 +16,6 @@ os outros três microsserviços ficam em `services/`.
     ├── projetos/               # cinebridge-projetos      (+ projetos-db)
     └── notificacoes/           # cinebridge-notificacoes  (+ notificacoes-db)
 ```
-
-## ATV III
-
-### Adapter
-| Interface (contrato do núcleo) | Sistema externo simulado | Adaptadores |
-|---|---|---|
-| `AdaptadorArmazenamento` | `ArmazenamentoExterno` (upload/download/listar) | `AdaptadorS3`, `AdaptadorGoogleCloud`, `AdaptadorLocal` |
-| `AdaptadorPagamento` | `GatewayPagamento` (processar/estornar/consultarStatus) | `AdaptadorStripe` (centavos), `AdaptadorPagSeguro`, `AdaptadorPayPal` |
-| `AdaptadorProfissional` | `ApiProfissionalExterna` (formato snake_case) | `AdaptadorLinkedIn` (escala 1–5 → 0–10), `AdaptadorIndeed`, `AdaptadorInterno` |
-
-`SistemaRecomendacao` recebe os adaptadores no construtor ou via `configurarAdaptadores(armazenamento, pagamento, profissional)`
-e só conhece as interfaces. Usos reais no núcleo: `executarRecomendacao(projeto)` busca candidatos no `AdaptadorProfissional` quando
-a lista não é informada e arquiva o relatório do projeto no `AdaptadorArmazenamento`; `efetuarPagamentoEquipe(equipe)` paga cada membro pelo gateway configurado.
-
-### Composite
-`ServicoProjeto` (`calcularCusto`, `listarSubservicos`, `obterPrazo`, `validar`) → `ServicoAtomico` (folha) e `PacoteServico` (pode conter
-atômicos ou outros pacotes, em modo `sequencial` = soma dos prazos ou `paralelo` = maior prazo). `Projeto` ganhou `servicoPrincipal`;
-`calcularCustoTotal()` delega a ele e a validação (`validarEstrutura()`) é recursiva e já participa do orquestrador, das fábricas e do `ValidadorConsistencia`.
-
-### Decorator
-`RecomendadorBase` + `CacheDecorator`, `AuditoriaDecorator`, `CompressaoDecorator`, todos `RecomendacaoStrategy`.
-A pilha é montada em tempo de execução por `PilhaDecoradores` (ex.: `"cache,auditoria,compressao"`, da esquerda para a direita = do mais interno ao mais externo)
-e instalada com `sistema.definirDecoradores(...)` — sem alterar `SistemaRecomendacao`. Nos containers, use a variável `DECORADORES` em `env/api.env`.
-
-### Interpretações (não estão no enunciado — vale validar com o professor)
-- **Compressão**: `RecomendacaoStrategy` devolve um `Map`, não bytes. A compressão mantém só os N melhores candidatos por papel e expõe `comprimirParaTransmissao()` (gzip) e o relatório de bytes antes/depois.
-- **Prazo de pacote**: o enunciado não diz como combinar prazos; adotei soma (sequencial, padrão) ou máximo (paralelo).
-- `Projeto` mantém `papeisObrigatorios` (derivado do `servicoPrincipal` quando a lista vem vazia) para não quebrar as atividades anteriores.
-- `RecomendadorBase` delega a uma estratégia existente (padrão: `SimilaridadeCosseno`).
 
 ## ATV IV
 
@@ -107,9 +75,3 @@ npm test
 npm run typecheck
 npm run dev        # sobe a API em :3000 (sem RABBITMQ_URL, funciona como na ATV II: exige "profissionais" no corpo)
 ```
-
-## Mudanças em relação ao repositório da ATV II
-- `src/index.ts` não sobe mais o servidor ao ser importado; a criação do app está em `src/app.ts` e a inicialização em `src/main.ts` (`npm run dev`/`npm start`).
-- **Fastify 5 → 4**: o Fastify 5 exige Node ≥ 20 e a ATV IV manda usar `node:18-alpine`. A API usada no projeto é a mesma. Se o professor aceitar `node:20-alpine`, pode voltar para a 5.
-- Dependências novas: `amqplib` (e `pg` nos serviços). Rode `npm install` para regenerar o `package-lock.json`.
-- Senhas em `env/*.env` são só de desenvolvimento; troque-as para qualquer ambiente real.
