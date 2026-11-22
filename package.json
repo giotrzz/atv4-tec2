@@ -1,0 +1,38 @@
+{
+  "name": "cinebridge-api",
+  "version": "1.0.0",
+  "description": "Cinebridge - microsserviço de recomendação e orquestração (cinebridge-api)",
+  "main": "dist/main.js",
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "start": "node dist/main.js",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "dev": "tsx src/main.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/giotrzz/ATV1-Tec2-Cinebridge.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/giotrzz/ATV1-Tec2-Cinebridge/issues"
+  },
+  "homepage": "https://github.com/giotrzz/ATV1-Tec2-Cinebridge#readme",
+  "dependencies": {
+    "amqplib": "^0.10.5",
+    "fastify": "^4.29.1"
+  },
+  "devDependencies": {
+    "@types/amqplib": "^0.10.5",
+    "@types/node": "^26.6.3",
+    "@vitest/coverage-v8": "^5.0.2",
+    "tsx": "^4.23.15",
+    "typescript": "^7.0.2",
+    "vitest": "^5.0.2"
+  }
+}
